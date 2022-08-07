@@ -7,6 +7,7 @@ import yaml
 import paramiko
 import os
 import time
+from pathlib import Path
 
 def main():
     servers  = serverLoader()
@@ -15,7 +16,7 @@ def main():
        backupMySQL(server, connection)
 
 def serverLoader():
-    with open("./servers.yml", "r") as stream:
+    with open(os.path.abspath(f"{Path(__file__).parent.absolute()}/servers.yml"), "r") as stream:
         try:
             return yaml.safe_load(stream)
         except yaml.YAMLError as exc:
