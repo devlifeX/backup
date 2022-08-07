@@ -1,0 +1,15 @@
+servers:
+  - default:
+    project_name: "default"
+    saveDir: "/tmp"
+    keepCount: 3
+    username: root
+    hostname: 127.0.0.1
+    port: 22
+    mysql:
+      container: "db"
+      user: "root"
+      pass: "root"
+      database: "wordpress"
+      port: 3306
+    commands:
