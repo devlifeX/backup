@@ -1,22 +1,32 @@
 #!/usr/bin/env python3
 
-from calendar import c
-from http import server
-from multiprocessing import connection
 import yaml
 import paramiko
 import os
 import time
 from pathlib import Path
-
+import string
+import random
 def main():
     servers  = serverLoader()
+    if (servers is None):
+        print("Server.yml not exist!")
+        return;
+
     for server in servers['servers']:
        connection = connectWithSSHKey(server)
+       if(connection is None):
+            print(f"Failed to connect ro server {server['hostname']}")
+            continue;
        backupMySQL(server, connection)
 
 def serverLoader():
-    with open(os.path.abspath(f"{Path(__file__).parent.absolute()}/servers.yml"), "r") as stream:
+    serverFile = os.path.abspath(f"{Path(__file__).parent.absolute()}/servers.yml")
+    
+    if (not os.path.exists(serverFile)):
+        return None;
+
+    with open(serverFile, "r") as stream:
         try:
             return yaml.safe_load(stream)
         except yaml.YAMLError as exc:
@@ -25,22 +35,29 @@ def serverLoader():
 
 
 def connectWithSSHKey(server):
-    pkey = paramiko.RSAKey.from_private_key_file(filename=os.path.expanduser("~/.ssh/id_rsa"))
-    args = {
-    "hostname": server['hostname'],
-    "username": server['username'],
-    "pkey": pkey,
-    }
+    try:
+        pkey = paramiko.RSAKey.from_private_key_file(filename=os.path.expanduser("~/.ssh/id_rsa"))
+        args = {
+        "hostname": server['hostname'],
+        "username": server['username'],
+        "pkey": pkey,
+        }
 
-    if('port' in server):
-        args['port']  = server['port']
+        if('port' in server):
+            args['port']  = server['port']
 
-    client = paramiko.SSHClient()
-    policy = paramiko.AutoAddPolicy()
-    client.set_missing_host_key_policy(policy)
-    client.connect(**args)
-    return client
+        client = paramiko.SSHClient()
+        policy = paramiko.AutoAddPolicy()
+        client.set_missing_host_key_policy(policy)
+        client.connect(**args)
+        return client
+    except paramiko.ssh_exception.NoValidConnectionsError as err:
+        print("Please check private key path, server IP and Server Port")
+        return None
 
+
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 def isContainerExist(connection):
     # docker ps -f "name=db" | wc -l
@@ -56,6 +73,7 @@ def isContainerExist(connection):
 
 def backupMySQL(server, connection):
     try:
+        print(f"Start on {server['hostname']}")
         isExist = isContainerExist(connection)
         if(isExist):
             cleanBeforeSart(server, connection)
@@ -63,6 +81,7 @@ def backupMySQL(server, connection):
             gzipDatabse(server, connection)
             filename = renameDatabase(server, connection)
             SFTP(server, connection, filename)
+            print(f"Finished on {server['hostname']}")
         else:
             print( f"No Database container on {server['hostname']}")
         connection.close()
@@ -104,8 +123,9 @@ def renameDatabase(server, connection):
     try:
         project_name = server['project_name']
         c = server['mysql']
+        rndString = id_generator()
         timestr = time.strftime("%Y-%m-%d-%H-%M-%S")
-        filename = f"{project_name}-{c['database']}-{timestr}.sql.gz"
+        filename = f"{project_name}-{c['database']}_{rndString}-{timestr}.sql.gz"
         command = f"mv /tmp/{c['database']}.sql.gz /tmp/{filename}"
         _stdin, stdout, _stderr = connection.exec_command(command)
         lines = str(stdout.read().decode()).strip()
@@ -127,7 +147,7 @@ def keepHandler(server):
 
         count = 0
         for file in files:
-            if(file.split("-")[0] == project_name):
+            if(file.split("_")[0] == project_name+"-"+ server['mysql']['database']):
                 count+=1
 
         if(count >= keepCount):
