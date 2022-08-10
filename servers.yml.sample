@@ -1,3 +1,8 @@
+options:
+  telegram:
+    botToken: -
+    chat_id:  -
+    disable_notification: true
 servers:
   - default:
     project_name: "default"
@@ -7,9 +12,9 @@ servers:
     hostname: 127.0.0.1
     port: 22
     mysql:
-      container: "db"
+      container: "mysql"
       user: "root"
       pass: "root"
-      database: "wordpress"
+      database: "databaseName"
       port: 3306
-    commands:
+

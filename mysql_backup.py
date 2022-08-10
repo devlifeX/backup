@@ -1,40 +1,46 @@
 from baseclass import Base
 import os
 import time
+from telegram import Telegram
+
 
 class MysqlBackup:
     def __init__(self):
         self.base = Base()
+        self.telegram = Telegram()
 
     def run(self):
         try:
             for server in self.base.servers:
                 connection = self.base.connectWithSSHKey(server)
-                if(connection is None):
-                        print(f"Failed to connect ro server {server['hostname']}")
-                        continue
+                if (connection is None):
+                    print(f"Failed to connect ro server {server['hostname']}")
+                    continue
                 self.backupMySQL(server, connection)
+                self.telegram.send(
+                    f"Backup System: Done with {len(self.base.servers)} server(s)!")
         except error:
+            self.telegram.send(f"Backup System: Error accrued {error}")
             print(error)
 
     def isContainerExist(self, connection):
         # docker ps -f "name=db" | wc -l
         try:
-            _stdin, stdout, _stderr = connection.exec_command("docker ps -f 'name=db' | wc -l")
+            _stdin, stdout, _stderr = connection.exec_command(
+                "docker ps -f 'name=db' | wc -l")
             lines = str(stdout.read().decode()).strip()
-            if lines == "2": 
+            if lines == "2":
                 return True
             else:
                 return False
         except error:
             print(error)
 
-
     def backupMySQL(self, server, connection):
         try:
             print(f"Start on {server['hostname']}")
             isExist = self.isContainerExist(connection)
-            if(isExist):
+            if (isExist):
                 self.cleanBeforeSart(server, connection)
                 self.doExport(server, connection)
                 self.gzipDatabse(server, connection)
@@ -42,7 +48,7 @@ class MysqlBackup:
                 self.SFTP(server, connection, filename)
                 print(f"Finished on {server['hostname']}")
             else:
-                print( f"No Database container on {server['hostname']}")
+                print(f"No Database container on {server['hostname']}")
             connection.close()
         except error:
             print(error)
@@ -92,25 +98,27 @@ class MysqlBackup:
         except error:
             print(error)
 
-
     def keepHandler(self, server):
         try:
-            project_nameAndDatabase = server['project_name'] + "-"+ server['mysql']['database']
+            project_nameAndDatabase = server['project_name'] + \
+                "-" + server['mysql']['database']
             dir = server['saveDir']
             keepCount = server['keepCount']
-            if(not os.path.exists(dir)):
+            if (not os.path.exists(dir)):
                 os.mkdir(dir)
-        
+
             os.chdir(dir)
-            files = sorted(filter(os.path.isfile, os.listdir(dir)), key=os.path.getmtime)
-        
-            backup_files = list(filter(lambda f, i=project_nameAndDatabase:(f.split("_")[0] == i) , files))
-                
-            count = len(backup_files) 
-            if(count >= keepCount):
+            files = sorted(
+                filter(os.path.isfile, os.listdir(dir)), key=os.path.getmtime)
+
+            backup_files = list(
+                filter(lambda f, i=project_nameAndDatabase: (f.split("_")[0] == i), files))
+
+            count = len(backup_files)
+            if (count >= keepCount):
                 for i in range(0, count + 1 - keepCount):
-                        os.remove(f"{dir}/{backup_files[i]}")
-        
+                    os.remove(f"{dir}/{backup_files[i]}")
+
         except error:
             print(error)
 
