@@ -91,7 +91,7 @@ def backupMySQL(server, connection):
 def doExport(server, connection):
     try:
         c = server['mysql']
-        command = f"docker exec -i {c['container']} mysqldump --port {c['port']} -u {c['user']} -p{c['pass']} {c['database']} > /tmp/{c['database']}.sql"
+        command = f"docker exec -i {c['container']} mysqldump --single-transaction --quick --lock-tables=false --port {c['port']} -u {c['user']} -p{c['pass']} {c['database']} > /tmp/{c['database']}.sql"
         _stdin, stdout, _stderr = connection.exec_command(command)
         lines = str(stdout.read().decode()).strip()
         err = str(_stderr.read().decode()).strip()
@@ -136,23 +136,21 @@ def renameDatabase(server, connection):
 
 def keepHandler(server):
     try:
-        project_name = server['project_name']
+        project_nameAndDatabase = server['project_name'] + "-"+ server['mysql']['database']
         dir = server['saveDir']
         keepCount = server['keepCount']
         if(not os.path.exists(dir)):
             os.mkdir(dir)
-             
+      
         os.chdir(dir)
         files = sorted(filter(os.path.isfile, os.listdir(dir)), key=os.path.getmtime)
-
-        count = 0
-        for file in files:
-            if(file.split("_")[0] == project_name+"-"+ server['mysql']['database']):
-                count+=1
-
+     
+        backup_files = list(filter(lambda f, i=project_nameAndDatabase:(f.split("_")[0] == i) , files))
+               
+        count = len(backup_files) 
         if(count >= keepCount):
            for i in range(0, count + 1 - keepCount):
-                os.remove(f"{dir}/{files[i]}")
+                os.remove(f"{dir}/{backup_files[i]}")
 
     except error:
         print(error)
