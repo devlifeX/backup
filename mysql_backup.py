@@ -11,6 +11,7 @@ class MysqlBackup:
 
     def run(self):
         try:
+            self.base.hardDiskNotificationHandler(self.telegram)
             for server in self.base.servers:
                 connection = self.base.connectWithSSHKey(server)
                 if (connection is None):
