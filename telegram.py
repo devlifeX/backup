@@ -22,7 +22,7 @@ class Telegram:
             headers = CaseInsensitiveDict()
             headers["Content-Type"] = "application/json"
             post = requests.post(url, headers=headers,
-                                 data=json.dumps(obj['data']))
+                                 data=json.dumps(obj['data']), timeout=10)
             if (post.status_code == 200):
                 return True
             else:
@@ -31,3 +31,8 @@ class Telegram:
         except error:
             base.log(f" Telegram error {error}")
             return False
+
+
+if __name__ == '__main__':
+    t = Telegram()
+    t.send("salam")
