@@ -3,10 +3,15 @@ options:
     botToken: -
     chat_id:  -
     disable_notification: true
+    proxy:
+      username: d1
+      password: d1
+      hostname: 127.0.0.1
+      port: 3128
 servers:
   - default:
     project_name: "default"
-    saveDir: /home/user/backup-file
+    saveDir: /root/backup-file
     keepCount: 3
     username: root
     hostname: 127.0.0.1
