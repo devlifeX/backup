@@ -10,19 +10,34 @@ class Telegram:
 
     def send(self, message, base=None):
         try:
+            option = self.base.options['telegram']
             obj = {
-                'botToken': self.base.options['telegram']['botToken'],
+                'botToken': option['botToken'],
                 "data": {
                     "text": message,
-                    "chat_id": self.base.options['telegram']['chat_id'],
-                    "disable_notification": self.base.options['telegram']['disable_notification'],
+                    "chat_id": option['chat_id'],
+                    "disable_notification": option['disable_notification'],
                 }
             }
             url = f"https://api.telegram.org/bot{obj['botToken']}/sendMessage"
             headers = CaseInsensitiveDict()
             headers["Content-Type"] = "application/json"
-            post = requests.post(url, headers=headers,
-                                 data=json.dumps(obj['data']), timeout=10)
+
+            args = {
+                "url": url,
+                "headers": headers,
+                "data": json.dumps(obj['data']),
+                "timeout": 10
+            }
+
+            if ('proxy' in option):
+                p = option['proxy']
+                proxies = {
+                    "https": f"https://{p['username']}:{p['password']}@{p['hostname']}:{p['port']}",
+                }
+                args['proxies'] = proxies
+
+            post = requests.post(**args)
             if (post.status_code == 200):
                 return True
             else:
