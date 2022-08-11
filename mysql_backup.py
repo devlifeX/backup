@@ -128,3 +128,4 @@ class MysqlBackup:
         sftp = connection.open_sftp()
         dir = server['saveDir']
         sftp.get(f"/tmp/{filename}", f"{dir}/{filename}")
+        sftp.remove(f"/tmp/{filename}")
