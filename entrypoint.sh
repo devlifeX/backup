@@ -1,2 +1,1 @@
-echo "$CRONTAB python /root/main.py >> /var/log/backup.log" >/etc/cron.d/backup
-cron && tail -f /var/log/backup.log
+echo "$CRONTAB /usr/local/bin/python /root/main.py  >> /var/log/backup.log  2>&1" >/etc/cron.d/backup

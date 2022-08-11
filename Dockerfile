@@ -6,20 +6,20 @@ COPY baseclass.py main.py mysql_backup.py telegram.py requirements.txt servers.y
 RUN pip install -r requirements.txt
 RUN pip install --ignore-installed six
 
-RUN apt update && apt install -y cron
+RUN apt update && apt install -y cron vim
 
 ARG CRONTAB
 
-RUN echo "$CRONTAB python /root/main.py" >/etc/cron.d/backup
+RUN echo "0 * * * * /usr/local/bin/python /root/main.py  >> /var/log/backup.log  2>&1" >/etc/cron.d/backup
 RUN chmod 0644 /etc/cron.d/backup
 RUN crontab /etc/cron.d/backup
 RUN touch /var/log/backup.log
 RUN chmod 777 /var/log/backup.log
 
-LABEL "Author"="Dariush Vesal"
+LABEL "Author Name"="Dariush Vesal"
 LABEL "Author Email"="dariush.vesal@gmail.com"
 
 COPY entrypoint.sh ./
 RUN chmod +x ./entrypoint.sh
 
-CMD ["bash", "entrypoint.sh"]
+CMD bash entrypoint.sh && cron -f
