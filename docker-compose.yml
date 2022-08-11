@@ -5,6 +5,10 @@ services:
     container_name: mysqlAutoBackup
     image: devlifex/mysql-auto-backup
     restart: always
+    environment:
+      # Every Hour By Default
+      # CRONTAB: "0 * * * *"
+      CRONTAB: "* * * * *"
     volumes:
       - ~/.ssh:/root/.ssh:ro
       - ./backup-file:/root/backup-file

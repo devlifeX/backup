@@ -15,14 +15,16 @@ class MysqlBackup:
             for server in self.base.servers:
                 connection = self.base.connectWithSSHKey(server)
                 if (connection is None):
-                    print(f"Failed to connect ro server {server['hostname']}")
+                    self.base.log(
+                        f"Failed to connect ro server {server['hostname']}")
                     continue
                 self.backupMySQL(server, connection)
                 self.telegram.send(
-                    f"Backup System: Done with {len(self.base.servers)} server(s)!")
+                    f"Backup System: Done with {len(self.base.servers)} server(s)!", self.base)
         except error:
             self.telegram.send(f"Backup System: Error accrued {error}")
-            print(error)
+            self.base.log(f"Backup System: Error accrued {error}")
+            self.base.log(error)
 
     def isContainerExist(self, connection):
         # docker ps -f "name=db" | wc -l
@@ -35,11 +37,11 @@ class MysqlBackup:
             else:
                 return False
         except error:
-            print(error)
+            self.base.log(error)
 
     def backupMySQL(self, server, connection):
         try:
-            print(f"Start on {server['hostname']}")
+            self.base.log(f"Start on {server['hostname']}")
             isExist = self.isContainerExist(connection)
             if (isExist):
                 self.cleanBeforeSart(server, connection)
@@ -47,12 +49,12 @@ class MysqlBackup:
                 self.gzipDatabse(server, connection)
                 filename = self.renameDatabase(server, connection)
                 self.SFTP(server, connection, filename)
-                print(f"Finished on {server['hostname']}")
+                self.base.log(f"Finished on {server['hostname']}")
             else:
-                print(f"No Database container on {server['hostname']}")
+                self.base.log(f"No Database container on {server['hostname']}")
             connection.close()
         except error:
-            print(error)
+            self.base.log(error)
 
     def doExport(self, server, connection):
         try:
@@ -61,9 +63,9 @@ class MysqlBackup:
             _stdin, stdout, _stderr = connection.exec_command(command)
             lines = str(stdout.read().decode()).strip()
             err = str(_stderr.read().decode()).strip()
-            print(err)
+            self.base.log(err)
         except error:
-            print(error)
+            self.base.log(error)
 
     def gzipDatabse(self, server, connection):
         try:
@@ -71,9 +73,9 @@ class MysqlBackup:
             command = f"gzip -9 /tmp/{c['database']}.sql"
             _stdin, stdout, _stderr = connection.exec_command(command)
             lines = str(stdout.read().decode()).strip()
-            print(lines)
+            self.base.log(lines)
         except error:
-            print(error)
+            self.base.log(error)
 
     def cleanBeforeSart(self, server, connection):
         try:
@@ -81,9 +83,9 @@ class MysqlBackup:
             command = f"sudo rm -rf /tmp/{c['database']}.sql"
             _stdin, stdout, _stderr = connection.exec_command(command)
             lines = str(stdout.read().decode()).strip()
-            print(lines)
+            self.base.log(lines)
         except error:
-            print(error)
+            self.base.log(error)
 
     def renameDatabase(self, server, connection):
         try:
@@ -97,7 +99,7 @@ class MysqlBackup:
             lines = str(stdout.read().decode()).strip()
             return filename
         except error:
-            print(error)
+            self.base.log(error)
 
     def keepHandler(self, server):
         try:
@@ -121,7 +123,7 @@ class MysqlBackup:
                     os.remove(f"{dir}/{backup_files[i]}")
 
         except error:
-            print(error)
+            self.base.log(error)
 
     def SFTP(self, server, connection, filename):
         self.keepHandler(server)

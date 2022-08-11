@@ -5,6 +5,7 @@ from pathlib import Path
 import string
 import random
 import psutil
+import time
 
 
 class Base:
@@ -56,15 +57,22 @@ class Base:
             client.connect(**args)
             return client
         except paramiko.ssh_exception.NoValidConnectionsError as err:
-            print("Please check private key path, server IP and Server Port")
+            self.log("Please check private key path, server IP and Server Port")
             return None
 
     def hardDiskNotificationHandler(self, telegram):
         threshold = self.options['sendAlertIfHardDiskUsageGoOverThisPercentage']
         if (self.getHardDiskUsage() >= threshold):
             telegram.send(
-                f"Disk usage exceeded {self.getHardDiskUsage()}%")
+                f"Disk usage exceeded {self.getHardDiskUsage()}%", self)
 
     def getHardDiskUsage(self):
         obj_Disk = psutil.disk_usage('/')
         return obj_Disk.percent
+
+    def log(self, message):
+        timestr = time.strftime("%Y-%m-%d-%H-%M-%S")
+        path = "/var/log/backup.log"
+        f = open(path, "a")
+        f.write(f"{message} - {timestr}\n")
+        f.close()

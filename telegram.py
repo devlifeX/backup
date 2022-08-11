@@ -8,7 +8,7 @@ class Telegram:
     def __init__(self):
         self.base = Base()
 
-    def send(self, message):
+    def send(self, message, base=None):
         try:
             obj = {
                 'botToken': self.base.options['telegram']['botToken'],
@@ -29,4 +29,5 @@ class Telegram:
                 return False
 
         except error:
+            base.log(f" Telegram error {error}")
             return False
