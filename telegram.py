@@ -46,8 +46,3 @@ class Telegram:
         except error:
             base.log(f" Telegram error {error}")
             return False
-
-
-if __name__ == '__main__':
-    t = Telegram()
-    t.send("salam")

@@ -10,6 +10,7 @@ services:
       # CRONTAB: "0 * * * *"
       CRONTAB: "* * * * *"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ~/.ssh:/root/.ssh:ro
       - ./backup-file:/root/backup-file
       - ./servers.yml:/root/servers.yml
