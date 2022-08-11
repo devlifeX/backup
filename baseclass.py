@@ -40,7 +40,7 @@ class Base:
     def connectWithSSHKey(self, server):
         try:
             pkey = paramiko.RSAKey.from_private_key_file(
-                filename=os.path.expanduser("~/.ssh/id_rsa"))
+                filename=os.path.expanduser(server['key']))
             args = {
                 "hostname": server['hostname'],
                 "username": server['username'],
