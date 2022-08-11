@@ -71,6 +71,8 @@ class Base:
         return obj_Disk.percent
 
     def log(self, message):
+        if (len(str(message).strip()) <= 0):
+            return
         timestr = time.strftime("%Y-%m-%d-%H-%M-%S")
         path = "/var/log/backup.log"
         f = open(path, "a")
