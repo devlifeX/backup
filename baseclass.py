@@ -1,3 +1,4 @@
+from shutil import ExecError
 import paramiko
 import yaml
 import os
@@ -6,6 +7,7 @@ import string
 import random
 import psutil
 import time
+import traceback
 
 
 class Base:
@@ -72,6 +74,19 @@ class Base:
     def getHardDiskUsage(self):
         obj_Disk = psutil.disk_usage('/')
         return obj_Disk.percent
+
+    def dirTralingSlash(self, path):
+        return path if not str(path).endswith("/") else path[:-1]
+
+    def getSaveDir(self, server):
+        try:
+            dir = self.dirTralingSlash(server['saveDir'])
+            if (not os.path.exists(dir)):
+                Path(dir).mkdir(0o775, parents=True, exist_ok=True)
+
+            return dir
+        except Exception as e:
+            self.log(e)
 
     def log(self, message):
         if (len(str(message).strip()) <= 0):

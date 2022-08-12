@@ -78,7 +78,7 @@ class MysqlBackup:
 
     def backupMySQL(self, server, connection):
         try:
-            self.base.log(f"Start on {server['hostname']}")
+            self.base.log(f"Start on {server['project_name']}")
             isExist = self.isContainerExist(connection)
             if (isExist):
                 self.cleanBeforeSart(server, connection)
@@ -86,9 +86,10 @@ class MysqlBackup:
                 self.gzipDatabse(server, connection)
                 filename = self.renameDatabase(server, connection)
                 self.SFTP(server, connection, filename)
-                self.base.log(f"Finished on {server['hostname']}")
+                self.base.log(f"Finished on {server['project_name']}")
             else:
-                self.base.log(f"No Database container on {server['hostname']}")
+                self.base.log(
+                    f"No Database container on {server['project_name']}")
                 self.report.error(server['project_name'],
                                   "Container not running!")
             connection.close()
@@ -158,11 +159,9 @@ class MysqlBackup:
         try:
             project_nameAndDatabase = server['project_name'] + \
                 "-" + server['mysql']['database']
-            dir = server['saveDir']
+            dir = self.base.getSaveDir(server)
             keepCount = server['keepCount']
-            if (not os.path.exists(dir)):
-                os.mkdir(dir)
-
+            print(dir)
             os.chdir(dir)
             files = sorted(
                 filter(os.path.isfile, os.listdir(dir)), key=os.path.getmtime)
@@ -184,7 +183,7 @@ class MysqlBackup:
         try:
             self.keepHandler(server)
             sftp = connection.open_sftp()
-            dir = server['saveDir']
+            dir = self.base.getSaveDir(server)
             sftp.get(f"/tmp/{filename}", f"{dir}/{filename}")
             sftp.remove(f"/tmp/{filename}")
         except Exception as error:
