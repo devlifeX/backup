@@ -46,6 +46,9 @@ class Base:
                 "hostname": server['hostname'],
                 "username": server['username'],
                 "pkey": pkey,
+                "banner_timeout": 9999,
+                "auth_timeout": 200,
+                "timeout": 999,
             }
 
             if ('port' in server):

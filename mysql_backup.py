@@ -10,25 +10,28 @@ class Report:
         self.log = {}
 
     def add(self, key, value):
+        if (value is None):
+            return
         self.log[key] = value
 
     def error(self, key, value):
-        self.log[key]['error'].append(value)
+        if (len(str(value).strip())):
+            return
+        self.log[key]['error'].append(str(value).strip())
 
     def print(self):
         output = ""
         done = 0
         failed = 0
         for key, l in self.log.items():
-            print(l)
             if (len(l['error']) <= 0):
                 done += 1
-                output += f"{l['project_name']}: successful\n"
+                output += f"{l['project_name']}: Successful\n"
             else:
                 failed += 1
-                output += f"\t{l['project_name']}: failed\n"
+                output += f"{l['project_name']}: Failed:\n"
                 for e in l['error']:
-                    output += f"\t\t{e}\n"
+                    output += f"{e}"
 
         headline = f"Done: {done} - Failed: {failed}\n"
         return headline + output
@@ -70,8 +73,8 @@ class MysqlBackup:
                 return True
             else:
                 return False
-        except:
-            self.base.log("Error: isContainerExist")
+        except Exception as error:
+            self.base.log(f"Error: isContainerExist: {error}")
 
     def backupMySQL(self, server, connection):
         try:
@@ -89,10 +92,10 @@ class MysqlBackup:
                 self.report.error(server['project_name'],
                                   "Container not running!")
             connection.close()
-        except:
-            self.base.log("Error: backupMySQL")
+        except Exception as error:
+            self.base.log(f"Error: backupMySQL {error}")
             self.report.error(server['project_name'],
-                              "Error: backupMySQL")
+                              f"Error: backupMySQL {error}")
 
     def doExport(self, server, connection):
         try:
@@ -106,10 +109,10 @@ class MysqlBackup:
                 self.report.error(server['project_name'],
                                   str(err).strip())
             self.base.log(err)
-        except:
-            self.base.log("Error: doExport")
+        except Exception as error:
+            self.base.log(f"Error: doExport {error}")
             self.report.error(server['project_name'],
-                              str(error).strip())
+                              error)
 
     def gzipDatabse(self, server, connection):
         try:
@@ -118,10 +121,10 @@ class MysqlBackup:
             _stdin, stdout, _stderr = connection.exec_command(command)
             lines = str(stdout.read().decode()).strip()
             self.base.log(lines)
-        except:
-            self.base.log("Error: gzipDatabse")
+        except Exception as error:
+            self.base.log(f"Error: gzipDatabse {error}")
             self.report.error(server['project_name'],
-                              "Error: gzipDatabse")
+                              f"Error: gzipDatabse: {error}")
 
     def cleanBeforeSart(self, server, connection):
         try:
@@ -130,10 +133,10 @@ class MysqlBackup:
             _stdin, stdout, _stderr = connection.exec_command(command)
             lines = str(stdout.read().decode()).strip()
             self.base.log(lines)
-        except:
-            self.base.log("Error: cleanBeforeSart")
+        except Exception as error:
+            self.base.log(f"Error: cleanBeforeSart: {error}")
             self.report.error(server['project_name'],
-                              "Error: cleanBeforeSart")
+                              f"Error: cleanBeforeSart: {error}")
 
     def renameDatabase(self, server, connection):
         try:
@@ -146,10 +149,10 @@ class MysqlBackup:
             _stdin, stdout, _stderr = connection.exec_command(command)
             lines = str(stdout.read().decode()).strip()
             return filename
-        except:
-            self.base.log("Error: renameDatabase")
+        except Exception as error:
+            self.base.log(f"Error: renameDatabase: {error}")
             self.report.error(server['project_name'],
-                              "Error: renameDatabase")
+                              f"Error: renameDatabase: {error}")
 
     def keepHandler(self, server):
         try:
@@ -172,10 +175,10 @@ class MysqlBackup:
                 for i in range(0, count + 1 - keepCount):
                     os.remove(f"{dir}/{backup_files[i]}")
 
-        except:
-            self.base.log("Error: keepHandler")
+        except Exception as error:
+            self.base.log(f"Error: keepHandler: {error}")
             self.report.error(server['project_name'],
-                              "Error: keepHandler")
+                              f"Error: keepHandler: {error}")
 
     def SFTP(self, server, connection, filename):
         try:
@@ -184,7 +187,7 @@ class MysqlBackup:
             dir = server['saveDir']
             sftp.get(f"/tmp/{filename}", f"{dir}/{filename}")
             sftp.remove(f"/tmp/{filename}")
-        except:
-            self.base.log("Error: SFTP - transfer file")
+        except Exception as error:
+            self.base.log(f"Error: SFTP - transfer file: {error}")
             self.report.error(server['project_name'],
-                              "Error: SFTP - transfer file")
+                              f"Error: SFTP - transfer file {error}")

@@ -1,3 +1,4 @@
 servers.yml
 __pycache__
 backup-file/
+*.yml
