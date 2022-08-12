@@ -15,21 +15,21 @@ class Report:
         self.log[key] = value
 
     def error(self, key, value):
-        if (len(str(value).strip())):
+        if (len(str(value).strip()) <= 0):
             return
-        self.log[key]['error'].append(str(value).strip())
+        self.log[key]['error'].append(value)
 
     def print(self):
         output = ""
         done = 0
         failed = 0
-        for key, l in self.log.items():
+        for l in self.log.values():
             if (len(l['error']) <= 0):
                 done += 1
                 output += f"{l['project_name']}: Successful\n"
             else:
                 failed += 1
-                output += f"{l['project_name']}: Failed:\n"
+                output += f"{l['project_name']}: Failed\n"
                 for e in l['error']:
                     output += f"{e}"
 
@@ -161,7 +161,6 @@ class MysqlBackup:
                 "-" + server['mysql']['database']
             dir = self.base.getSaveDir(server)
             keepCount = server['keepCount']
-            print(dir)
             os.chdir(dir)
             files = sorted(
                 filter(os.path.isfile, os.listdir(dir)), key=os.path.getmtime)
