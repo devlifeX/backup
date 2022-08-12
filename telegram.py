@@ -43,6 +43,6 @@ class Telegram:
             else:
                 return False
 
-        except error:
-            base.log(f" Telegram error {error}")
+        except:
+            base.log("Error: Send Telegram function")
             return False

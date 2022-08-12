@@ -32,8 +32,8 @@ class Base:
                 self.servers = content['servers']
                 return self
             except yaml.YAMLError as exc:
-                print(exc)
-                return self
+                self.log(
+                    "Please check private key path, server IP and Server Port")
 
     def id_generator(self, size=6, chars=string.ascii_uppercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
