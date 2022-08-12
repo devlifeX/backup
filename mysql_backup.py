@@ -57,6 +57,7 @@ class MysqlBackup:
                                       f"Failed to connect ro server {server['project_name']}")
                     continue
                 self.backupMySQL(server, connection)
+                time.sleep(15)
             except Exception as error:
                 self.base.log(f"Error: Main Function: {error}")
                 self.report.error(server['project_name'], error)
