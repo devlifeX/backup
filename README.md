@@ -1,7 +1,12 @@
 
 # MySQL Automatic Backup 
 This [Docker](https://hub.docker.com/r/devlifex/mysql-auto-backup/)
-image helps you start your own MySQL Automatic Backup server, with Telegram Notification
+image helps you start your own MySQL Automatic Backup server, And Provide Report Over Telegram  
+
+
+# How it work?
+Run this docker image and at every time you set in `docker-compose.yml` The application connect to other server and got the database backup,
+download the file and keep it untile they got old, after doing the job it will send Report message over Telegram so you can find the proccess was success or failuer, Of course on failure the human readable error provide.
 
 
 # Prerequsites
@@ -11,7 +16,8 @@ image helps you start your own MySQL Automatic Backup server, with Telegram Noti
 3. Telegram Bot Token and chat_id (Optional) 
 - [Create bot Token](https://t.me/BotFather)
 - [Find chat_id](https://stackoverflow.com/questions/32423837/telegram-bot-how-to-get-a-group-chat-id)  
-NOTICE: If you want to recive Telegram notifications And your VPS host in Region that Telegram can not send message like IRAN or China..,! you have to buy another VPS In region that Telegram CAN so, [use this repo](https://github.com/yegor256/squid-proxy) to [setup and run the proxy](https://github.com/devlifeX/backup/edit/master/README.md#setup-telegram-proxy). 
+- Do NOT forget to add the bot to your group and promot it to Admin  
+- NOTICE: If you want to recive Telegram notifications And your VPS host in Region that Telegram can not send message like IRAN or China..,! you have to buy another VPS In region that Telegram CAN, so [use this repo](https://github.com/yegor256/squid-proxy) to [setup and run the proxy](https://github.com/devlifeX/backup/edit/master/README.md#setup-telegram-proxy). 
 
 
 # Quick Usage
