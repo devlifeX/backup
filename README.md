@@ -8,6 +8,8 @@ image helps you start your own MySQL Automatic Backup server, And Provide Report
 Run this docker image and at every time you set in `docker-compose.yml` The application connect to other server and got the database backup,
 download the file and keep it untile they got old, after doing the job it will send Report message over Telegram so you can find the proccess was success or failuer, Of course on failure the human readable error provide.
 
+# What is the limitions?
+At this moment it can backup mysql database over docker at remot server and not mysql server it self. if you are running old fashion mysql server it won't help you. 
 
 # Prerequsites
 0. Dedicaed Server Or VPS 
@@ -72,3 +74,5 @@ Inside Your VPS Install Docker And run this command, That's it, now you can fiil
 ```bash
 docker run --name proxy -d --restart=always --publish 3128:3128 -e USERNAME=d1 -e PASSWORD=d1 yegor256/squid-proxy:0.1
 ```
+
+Contributions are welcome, please send your PR :)
