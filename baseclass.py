@@ -66,10 +66,16 @@ class Base:
             return None
 
     def hardDiskNotificationHandler(self, telegram):
-        threshold = self.options['sendAlertIfHardDiskUsageGoOverThisPercentage']
-        if (self.getHardDiskUsage() >= threshold):
+        try:
+            threshold = self.options['sendAlertIfHardDiskUsageGoOverThisPercentage']
+            if (self.getHardDiskUsage() >= threshold):
+                telegram.send(
+                    f"Disk usage exceeded {self.getHardDiskUsage()}%", self)
+        except Exception as e:
+            print("Incorrect YML format")
+            self.log("Incorrect YML format")
             telegram.send(
-                f"Disk usage exceeded {self.getHardDiskUsage()}%", self)
+                f"Incorrect YML format", self)
 
     def getHardDiskUsage(self):
         obj_Disk = psutil.disk_usage('/')
