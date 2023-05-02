@@ -21,40 +21,39 @@ class Base:
         self.serverLoader()
 
     def serverLoader(self):
-        serverFile = os.path.abspath(
-            f"{Path(__file__).parent.absolute()}/servers.yml")
+        serverFile = os.path.abspath(f"{Path(__file__).parent.absolute()}/servers.yml")
 
-        if (not os.path.exists(serverFile)):
+        if not os.path.exists(serverFile):
             return None
 
         with open(serverFile, "r") as stream:
             try:
                 content = yaml.safe_load(stream)
-                self.options = content['options']
-                self.servers = content['servers']
+                self.options = content["options"]
+                self.servers = content["servers"]
                 return self
             except yaml.YAMLError as exc:
-                self.log(
-                    "Please check private key path, server IP and Server Port")
+                self.log("Please check private key path, server IP and Server Port")
 
     def id_generator(self, size=6, chars=string.ascii_uppercase + string.digits):
-        return ''.join(random.choice(chars) for _ in range(size))
+        return "".join(random.choice(chars) for _ in range(size))
 
     def connectWithSSHKey(self, server):
         try:
             pkey = paramiko.RSAKey.from_private_key_file(
-                filename=os.path.expanduser(server['key']))
+                filename=os.path.expanduser(server["key"])
+            )
             args = {
-                "hostname": server['hostname'],
-                "username": server['username'],
+                "hostname": server["hostname"],
+                "username": server["username"],
                 "pkey": pkey,
                 "banner_timeout": 9999,
                 "auth_timeout": 200,
                 "timeout": 999,
             }
 
-            if ('port' in server):
-                args['port'] = server['port']
+            if "port" in server:
+                args["port"] = server["port"]
 
             client = paramiko.SSHClient()
             policy = paramiko.AutoAddPolicy()
@@ -67,18 +66,16 @@ class Base:
 
     def hardDiskNotificationHandler(self, telegram):
         try:
-            threshold = self.options['sendAlertIfHardDiskUsageGoOverThisPercentage']
-            if (self.getHardDiskUsage() >= threshold):
-                telegram.send(
-                    f"Disk usage exceeded {self.getHardDiskUsage()}%", self)
+            threshold = self.options["sendAlertIfHardDiskUsageGoOverThisPercentage"]
+            if self.getHardDiskUsage() >= threshold:
+                telegram.send(f"Disk usage exceeded {self.getHardDiskUsage()}%", self)
         except Exception as e:
             print("Incorrect YML format")
             self.log("Incorrect YML format")
-            telegram.send(
-                f"Incorrect YML format", self)
+            telegram.send(f"Incorrect YML format", self)
 
     def getHardDiskUsage(self):
-        obj_Disk = psutil.disk_usage('/')
+        obj_Disk = psutil.disk_usage("/")
         return obj_Disk.percent
 
     def dirTralingSlash(self, path):
@@ -86,8 +83,8 @@ class Base:
 
     def getSaveDir(self, server):
         try:
-            dir = self.dirTralingSlash(server['saveDir'])
-            if (not os.path.exists(dir)):
+            dir = self.dirTralingSlash(server["saveDir"])
+            if not os.path.exists(dir):
                 Path(dir).mkdir(0o775, parents=True, exist_ok=True)
 
             return dir
@@ -95,10 +92,11 @@ class Base:
             self.log(e)
 
     def log(self, message):
-        if (len(str(message).strip()) <= 0):
+        if len(str(message).strip()) <= 0:
             return
         timestr = time.strftime("%Y-%m-%d-%H-%M-%S")
         path = "/var/log/backup.log"
         f = open(path, "a")
         f.write(f"{message} - {timestr}\n")
+        print(f"{message} - {timestr}\n")
         f.close()
